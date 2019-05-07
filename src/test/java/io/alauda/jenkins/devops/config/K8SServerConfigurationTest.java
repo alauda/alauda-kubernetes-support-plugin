@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
-public class K8SServerConfigurationTest {
+public class K8sServerConfigurationTest {
 
     @Rule
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
@@ -22,9 +22,9 @@ public class K8SServerConfigurationTest {
             r.submit(config);
             assertEquals("global config page let us edit it", "http://test", K8sServerConfiguration.get().getServer().getServerUrl());
         });
-//        rr.then(r -> {
-//            assertEquals("still there after restart of Jenkins", "http://test", K8sServerConfiguration.get().getServer().getServerUrl());
-//        });
+        rr.then(r -> {
+            assertEquals("still there after restart of Jenkins", "http://test", K8sServerConfiguration.get().getServer().getServerUrl());
+        });
     }
 
 }

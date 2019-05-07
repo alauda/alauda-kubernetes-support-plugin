@@ -7,9 +7,6 @@ import org.kohsuke.stapler.DataBoundSetter;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * Example of Jenkins global configuration.
- */
 @Extension
 public class K8sServerConfiguration extends GlobalConfiguration {
 

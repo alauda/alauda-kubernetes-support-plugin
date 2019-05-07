@@ -52,7 +52,6 @@ public class KubernetesConnectionTestClient {
             serverUrl = KUBERNETES_MASTER_URL;
         }
 
-
         OkHttpClient client;
 
         if (skipTlsVerify) {
