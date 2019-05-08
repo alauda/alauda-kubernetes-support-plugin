@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
-public class K8sServerConfigurationTest {
+public class KubernetesClusterConfigurationTest {
 
     @Rule
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
@@ -15,15 +15,15 @@ public class K8sServerConfigurationTest {
     @Test
     public void uiAndStorage() {
         rr.then(r -> {
-            assertNull("not set initially", K8sServerConfiguration.get().getServer());
+            assertNull("not set initially", KubernetesClusterConfiguration.get().getCluster());
             HtmlForm config = r.createWebClient().goTo("configure").getFormByName("config");
-            HtmlTextInput textbox = config.getInputByName("_.serverUrl");
+            HtmlTextInput textbox = config.getInputByName("_.masterUrl");
             textbox.setText("http://test");
             r.submit(config);
-            assertEquals("global config page let us edit it", "http://test", K8sServerConfiguration.get().getServer().getServerUrl());
+            assertEquals("global config page let us edit it", "http://test", KubernetesClusterConfiguration.get().getCluster().getMasterUrl());
         });
         rr.then(r -> {
-            assertEquals("still there after restart of Jenkins", "http://test", K8sServerConfiguration.get().getServer().getServerUrl());
+            assertEquals("still there after restart of Jenkins", "http://test", KubernetesClusterConfiguration.get().getCluster().getMasterUrl());
         });
     }
 

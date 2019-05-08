@@ -32,13 +32,13 @@ public class KubernetesConnectionTestClient {
     private static final String KUBERNETES_SERVICE_ACCOUNT_TOKEN_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/token";
     private static final String KUBERNETES_MASTER_URL = "https://kubernetes.default.svc";
 
-    private String serverUrl;
+    private String masterUrl;
     private boolean skipTlsVerify;
     private String serverCertificate;
     private String token;
 
-    public KubernetesConnectionTestClient(String serverUrl, boolean skipTlsVerify, String serverCertificate, String token) {
-        this.serverUrl = serverUrl;
+    public KubernetesConnectionTestClient(String masterUrl, boolean skipTlsVerify, String serverCertificate, String token) {
+        this.masterUrl = masterUrl;
         this.skipTlsVerify = skipTlsVerify;
         this.serverCertificate = serverCertificate;
         this.token = token;
@@ -50,9 +50,9 @@ public class KubernetesConnectionTestClient {
      * @return true if the connection is available
      */
     public boolean testConnection() throws GeneralSecurityException, IOException {
-        if (StringUtils.isEmpty(serverUrl)) {
-            // if server url is empty, we use the default url
-            serverUrl = KUBERNETES_MASTER_URL;
+        if (StringUtils.isEmpty(masterUrl)) {
+            // if master url is empty, we use the default url
+            masterUrl = KUBERNETES_MASTER_URL;
         }
 
         OkHttpClient client;
@@ -66,8 +66,8 @@ public class KubernetesConnectionTestClient {
             client = customCAHttpClient(serverCertificate);
         }
 
-        serverUrl = serverUrl.endsWith("/") ? serverUrl : serverUrl + "/";
-        String wholeUrl = serverUrl + "api/v1/namespaces";
+        masterUrl = masterUrl.endsWith("/") ? masterUrl : masterUrl + "/";
+        String wholeUrl = masterUrl + "api/v1/namespaces";
 
 
         if (StringUtils.isEmpty(token) && Files.exists(Paths.get(KUBERNETES_SERVICE_ACCOUNT_TOKEN_PATH))) {

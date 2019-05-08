@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
-    <f:entry field="serverUrl" title="${%Server}" description="The API serverUrl to sync against - leave blank if running on an Kubernetes cluster">
+    <f:entry field="masterUrl" title="${%Kubernetes URL}" description="The url of Kubernetes cluster - leave blank if running on an Kubernetes cluster">
         <f:textbox/>
     </f:entry>
     <f:entry field="credentialsId" title="${%Credentials}" >
@@ -14,5 +14,5 @@
         <f:textarea/>
     </f:entry>
     <f:validateButton title="${%Test Connection}" method="verifyConnect"
-                      with="serverUrl,credentialsId,serverCertificateAuthority,skipTlsVerify" progress="Testing..."/>
+                      with="masterUrl,credentialsId,serverCertificateAuthority,skipTlsVerify" progress="Testing..."/>
 </j:jelly>

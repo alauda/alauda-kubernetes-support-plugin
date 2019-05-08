@@ -19,24 +19,24 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Objects;
 
-public class AlaudaDevOpsK8sServer extends AbstractDescribableImpl<AlaudaDevOpsK8sServer> {
-    private String serverUrl;
+public class KubernetesCluster extends AbstractDescribableImpl<KubernetesCluster> {
+    private String masterUrl;
     private String credentialsId;
     private boolean skipTlsVerify = false;
     private String serverCertificateAuthority;
 
 
     @DataBoundConstructor
-    public AlaudaDevOpsK8sServer() {
+    public KubernetesCluster() {
     }
 
-    public String getServerUrl() {
-        return serverUrl;
+    public String getMasterUrl() {
+        return masterUrl;
     }
 
     @DataBoundSetter
-    public void setServerUrl(String serverUrl) {
-        this.serverUrl = serverUrl;
+    public void setMasterUrl(String masterUrl) {
+        this.masterUrl = masterUrl;
     }
 
     public String getCredentialsId() {
@@ -69,20 +69,20 @@ public class AlaudaDevOpsK8sServer extends AbstractDescribableImpl<AlaudaDevOpsK
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AlaudaDevOpsK8sServer that = (AlaudaDevOpsK8sServer) o;
+        KubernetesCluster that = (KubernetesCluster) o;
         return skipTlsVerify == that.skipTlsVerify &&
-                Objects.equals(serverUrl, that.serverUrl) &&
+                Objects.equals(masterUrl, that.masterUrl) &&
                 Objects.equals(credentialsId, that.credentialsId) &&
                 Objects.equals(serverCertificateAuthority, that.serverCertificateAuthority);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(serverUrl, credentialsId, skipTlsVerify, serverCertificateAuthority);
+        return Objects.hash(masterUrl, credentialsId, skipTlsVerify, serverCertificateAuthority);
     }
 
     @Extension
-    public static class AlaudaDevOpsK8sServerDescriptor extends Descriptor<AlaudaDevOpsK8sServer> {
+    public static class AlaudaDevOpsK8sServerDescriptor extends Descriptor<KubernetesCluster> {
 
         public ListBoxModel doFillCredentialsIdItems(@QueryParameter String credentialsId) {
             if (credentialsId == null) {
@@ -104,7 +104,7 @@ public class AlaudaDevOpsK8sServer extends AbstractDescribableImpl<AlaudaDevOpsK
         }
 
 
-        public FormValidation doVerifyConnect(@QueryParameter String serverUrl,
+        public FormValidation doVerifyConnect(@QueryParameter String masterUrl,
                                               @QueryParameter String credentialsId,
                                               @QueryParameter String serverCertificateAuthority,
                                               @QueryParameter boolean skipTlsVerify) {
@@ -112,20 +112,20 @@ public class AlaudaDevOpsK8sServer extends AbstractDescribableImpl<AlaudaDevOpsK
             try {
                 token = CredentialsUtils.getToken(credentialsId);
             } catch (GeneralSecurityException e) {
-                return FormValidation.error(String.format("Failed to connect to API server: %s", e.getMessage()));
+                return FormValidation.error(String.format("Failed to connect to cluster: %s", e.getMessage()));
             }
 
             KubernetesConnectionTestClient testClient =
-                    new KubernetesConnectionTestClient(serverUrl, skipTlsVerify, serverCertificateAuthority, token);
+                    new KubernetesConnectionTestClient(masterUrl, skipTlsVerify, serverCertificateAuthority, token);
 
             try {
                 if (testClient.testConnection()) {
-                    return FormValidation.ok(String.format("Connect to %s success.", serverUrl));
+                    return FormValidation.ok(String.format("Connect to %s success.", masterUrl));
                 } else {
-                    return FormValidation.error("Failed to connect to API server");
+                    return FormValidation.error("Failed to connect to cluster");
                 }
             } catch (GeneralSecurityException | IOException e) {
-                return FormValidation.error(String.format("Failed to connect to API server: %s", e.getMessage()));
+                return FormValidation.error(String.format("Failed to connect to cluster: %s", e.getMessage()));
             }
         }
     }
