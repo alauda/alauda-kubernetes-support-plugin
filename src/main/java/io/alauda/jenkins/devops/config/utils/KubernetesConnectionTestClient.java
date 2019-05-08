@@ -1,5 +1,6 @@
 package io.alauda.jenkins.devops.config.utils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.sf.json.JSONObject;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -7,6 +8,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.remoting.util.Charsets;
 
 import javax.net.ssl.*;
 import java.io.IOException;
@@ -24,6 +26,7 @@ import java.util.Collection;
 /**
  * A very simple HTTP-Based client that only used to test connection availability.
  */
+@SuppressFBWarnings(value = "DMI_HARDCODED_ABSOLUTE_FILENAME")
 public class KubernetesConnectionTestClient {
     public static final String KUBERNETES_SERVICE_ACCOUNT_CA_CRT_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
     public static final String KUBERNETES_SERVICE_ACCOUNT_TOKEN_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/token";
@@ -68,7 +71,7 @@ public class KubernetesConnectionTestClient {
 
 
         if (StringUtils.isEmpty(token) && Files.exists(Paths.get(KUBERNETES_SERVICE_ACCOUNT_TOKEN_PATH))) {
-            token = new String(Files.readAllBytes(Paths.get(KUBERNETES_SERVICE_ACCOUNT_TOKEN_PATH)));
+            token = new String(Files.readAllBytes(Paths.get(KUBERNETES_SERVICE_ACCOUNT_TOKEN_PATH)), Charsets.UTF_8);
         }
 
         Request req = new Request.Builder()
