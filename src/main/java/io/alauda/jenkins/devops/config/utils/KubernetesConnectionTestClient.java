@@ -28,9 +28,9 @@ import java.util.Collection;
  */
 @SuppressFBWarnings(value = "DMI_HARDCODED_ABSOLUTE_FILENAME")
 public class KubernetesConnectionTestClient {
-    public static final String KUBERNETES_SERVICE_ACCOUNT_CA_CRT_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
-    public static final String KUBERNETES_SERVICE_ACCOUNT_TOKEN_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/token";
-    public static final String KUBERNETES_MASTER_URL = "https://kubernetes.default.svc";
+    private static final String KUBERNETES_SERVICE_ACCOUNT_CA_CRT_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
+    private static final String KUBERNETES_SERVICE_ACCOUNT_TOKEN_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/token";
+    private static final String KUBERNETES_MASTER_URL = "https://kubernetes.default.svc";
 
     private String serverUrl;
     private boolean skipTlsVerify;
