@@ -112,7 +112,7 @@ public class AlaudaDevOpsK8sServer extends AbstractDescribableImpl<AlaudaDevOpsK
             try {
                 token = CredentialsUtils.getToken(credentialsId);
             } catch (GeneralSecurityException e) {
-                return FormValidation.error(String.format("Failed to connect to API serverUrl: %s", e.getMessage()));
+                return FormValidation.error(String.format("Failed to connect to API server: %s", e.getMessage()));
             }
 
             KubernetesConnectionTestClient testClient =
@@ -122,10 +122,10 @@ public class AlaudaDevOpsK8sServer extends AbstractDescribableImpl<AlaudaDevOpsK
                 if (testClient.testConnection()) {
                     return FormValidation.ok(String.format("Connect to %s success.", serverUrl));
                 } else {
-                    return FormValidation.error("Failed to connect to API serverUrl");
+                    return FormValidation.error("Failed to connect to API server");
                 }
             } catch (GeneralSecurityException | IOException e) {
-                return FormValidation.error(String.format("Failed to connect to API serverUrl: %s", e.getMessage()));
+                return FormValidation.error(String.format("Failed to connect to API server: %s", e.getMessage()));
             }
         }
     }

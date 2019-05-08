@@ -21,8 +21,6 @@ public class CredentialsUtils {
                         CredentialsProvider.lookupCredentials(StringCredentials.class, Jenkins.getInstance(), ACL.SYSTEM, Collections.emptyList()),
                         CredentialsMatchers.withId(credentialId));
 
-
-
         if (secretCredentials == null) {
             throw new GeneralSecurityException(String.format("Credential with id %s not found", credentialId));
         }
