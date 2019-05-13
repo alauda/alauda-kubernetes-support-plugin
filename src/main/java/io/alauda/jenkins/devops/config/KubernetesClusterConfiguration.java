@@ -51,7 +51,8 @@ public class KubernetesClusterConfiguration extends GlobalConfiguration {
         k8sClusters.clear();
         k8sClusters.add(cluster);
         save();
-        triggerConfigChangeEvent(cluster);
+
+        new Thread(() -> triggerConfigChangeEvent(cluster)).start();
     }
 
 
