@@ -58,7 +58,7 @@ public final class Clients {
             e.printStackTrace();
             logger.log(Level.WARNING, String.format("Unable to get token for k8s client, reason %s", e.getMessage()));
         }
-        client = Config.fromToken(cluster.getMasterUrl(), token, cluster.isSkipTlsVerify());
+        client = Config.fromToken(cluster.getMasterUrl(), token, !cluster.isSkipTlsVerify());
 
         if (!cluster.isSkipTlsVerify()) {
             Buffer buffer = new Buffer();
