@@ -4,14 +4,12 @@ import io.alauda.jenkins.devops.support.KubernetesCluster;
 import io.alauda.jenkins.devops.support.exception.KubernetesClientException;
 import io.alauda.jenkins.devops.support.utils.CredentialsUtils;
 import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.Configuration;
 import io.kubernetes.client.util.Config;
 import okio.Buffer;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.remoting.util.Charsets;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -35,11 +33,8 @@ public final class Clients {
      * @return Client that can connect to correspondent cluster, null if we cannot create client from cluster.
      */
     @Nonnull
-    public static ApiClient getOrCreateClientFromCluster(@Nonnull KubernetesCluster cluster) throws KubernetesClientException {
-        ApiClient client = Configuration.getDefaultApiClient();
-        if (client != null) {
-            return client;
-        }
+    public static ApiClient createClientFromCluster(@Nonnull KubernetesCluster cluster) throws KubernetesClientException {
+        ApiClient client;
         // if master url is empty, we create client from local cluster
         if (StringUtils.isEmpty(cluster.getMasterUrl())) {
             try {
@@ -87,14 +82,14 @@ public final class Clients {
         return client;
     }
 
-    public static ApiClient getOrCreateClientFromConfig(String masterUrl, String credentialsId, String serverCertificateAuthority, boolean skipTlsVerify) throws KubernetesClientException {
+    public static ApiClient createClientFromConfig(String masterUrl, String credentialsId, String serverCertificateAuthority, boolean skipTlsVerify) throws KubernetesClientException {
         KubernetesCluster cluster = new KubernetesCluster();
         cluster.setMasterUrl(masterUrl);
         cluster.setCredentialsId(credentialsId);
         cluster.setServerCertificateAuthority(serverCertificateAuthority);
         cluster.setSkipTlsVerify(skipTlsVerify);
 
-        return getOrCreateClientFromCluster(cluster);
+        return createClientFromCluster(cluster);
     }
 
 

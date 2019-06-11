@@ -60,7 +60,7 @@ public class KubernetesClusterConfiguration extends GlobalConfiguration {
         save();
 
         try {
-            ApiClient client = Clients.getOrCreateClientFromCluster(cluster);
+            ApiClient client = Clients.createClientFromCluster(cluster);
             // If we have more clusters to config in the future, we may need to remove this.
             Configuration.setDefaultApiClient(client);
 
