@@ -1,4 +1,4 @@
-package io.alauda.jenkins.devops.config;
+package io.alauda.jenkins.devops.support;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;

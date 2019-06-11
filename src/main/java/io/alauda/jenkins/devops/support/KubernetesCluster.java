@@ -1,4 +1,4 @@
-package io.alauda.jenkins.devops.config;
+package io.alauda.jenkins.devops.support;
 
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import hudson.Extension;
@@ -7,8 +7,13 @@ import hudson.model.Descriptor;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
-import io.alauda.jenkins.devops.config.utils.CredentialsUtils;
-import io.alauda.jenkins.devops.config.utils.KubernetesConnectionTestClient;
+import io.alauda.jenkins.devops.support.client.Clients;
+import io.alauda.jenkins.devops.support.exception.KubernetesClientException;
+import io.alauda.jenkins.devops.support.utils.CredentialsUtils;
+import io.kubernetes.client.ApiClient;
+import io.kubernetes.client.ApiException;
+import io.kubernetes.client.apis.CoreV1Api;
+import io.kubernetes.client.models.V1NamespaceList;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -108,25 +113,29 @@ public class KubernetesCluster extends AbstractDescribableImpl<KubernetesCluster
                                               @QueryParameter String credentialsId,
                                               @QueryParameter String serverCertificateAuthority,
                                               @QueryParameter boolean skipTlsVerify) {
-            String token;
+
+
+            ApiClient testClient;
             try {
-                token = CredentialsUtils.getToken(credentialsId);
-            } catch (GeneralSecurityException e) {
-                return FormValidation.error(String.format("Failed to connect to cluster: %s", e.getMessage()));
+                testClient = Clients.getOrCreateClientFromConfig(masterUrl, credentialsId, serverCertificateAuthority, skipTlsVerify);
+            } catch (KubernetesClientException e) {
+                e.printStackTrace();
+                return FormValidation.error(e.getMessage());
             }
 
-            KubernetesConnectionTestClient testClient =
-                    new KubernetesConnectionTestClient(masterUrl, skipTlsVerify, serverCertificateAuthority, token);
-
+            CoreV1Api api = new CoreV1Api(testClient);
+            V1NamespaceList list;
             try {
-                if (testClient.testConnection()) {
-                    return FormValidation.ok(String.format("Connect to %s success.", masterUrl));
-                } else {
-                    return FormValidation.error("Failed to connect to cluster");
-                }
-            } catch (GeneralSecurityException | IOException e) {
-                return FormValidation.error(String.format("Failed to connect to cluster: %s", e.getMessage()));
+                list = api.listNamespace(null, null, null, null, null, null, null, null, null);
+            } catch (ApiException e) {
+                return FormValidation.error(e.getMessage());
             }
+
+            if (list == null) {
+                return FormValidation.error(String.format("Unable to connect to cluster %s", masterUrl));
+            }
+
+            return FormValidation.ok(String.format("Connect to %s succeed", masterUrl));
         }
     }
 }

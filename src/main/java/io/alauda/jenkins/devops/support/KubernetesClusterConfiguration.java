@@ -1,14 +1,21 @@
-package io.alauda.jenkins.devops.config;
+package io.alauda.jenkins.devops.support;
 
 import hudson.Extension;
+import io.alauda.jenkins.devops.support.client.Clients;
+import io.alauda.jenkins.devops.support.exception.KubernetesClientException;
+import io.kubernetes.client.ApiClient;
+import io.kubernetes.client.Configuration;
 import jenkins.model.GlobalConfiguration;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Extension
 public class KubernetesClusterConfiguration extends GlobalConfiguration {
+    private static final Logger logger = Logger.getLogger(KubernetesClusterConfiguration.class.getName());
 
     // We might config multiple servers in the future, so we use list to store them
     private List<KubernetesCluster> k8sClusters = new LinkedList<>();
@@ -52,14 +59,32 @@ public class KubernetesClusterConfiguration extends GlobalConfiguration {
         k8sClusters.add(cluster);
         save();
 
-        new Thread(() -> triggerConfigChangeEvent(cluster)).start();
+        try {
+            ApiClient client = Clients.getOrCreateClientFromCluster(cluster);
+            // If we have more clusters to config in the future, we may need to remove this.
+            Configuration.setDefaultApiClient(client);
+
+            new Thread(() -> triggerConfigChangeEvent(cluster, client)).start();
+        } catch (KubernetesClientException e) {
+            e.printStackTrace();
+            logger.log(Level.SEVERE, String.format("Unable to create client from cluster %s, reason %s",  cluster.getMasterUrl(), e.getMessage()));;
+            new Thread(() -> triggerConfigErrorEvent(cluster)).start();
+        }
+
+
     }
 
 
-    private void triggerConfigChangeEvent(KubernetesCluster cluster) {
+    private void triggerConfigChangeEvent(KubernetesCluster cluster, ApiClient client) {
         KubernetesClusterConfigurationListener
                 .all()
                 .forEach(listener ->
-                        listener.onConfigChange(cluster));
+                        listener.onConfigChange(cluster, client));
+    }
+
+    private void triggerConfigErrorEvent(KubernetesCluster cluster) {
+        KubernetesClusterConfigurationListener.all()
+                .forEach(listener ->
+                        listener.onConfigError(cluster));
     }
 }
