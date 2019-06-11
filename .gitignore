@@ -110,4 +110,5 @@ Temporary Items
 
 work/
 target/
+scripts/env.sh
 
