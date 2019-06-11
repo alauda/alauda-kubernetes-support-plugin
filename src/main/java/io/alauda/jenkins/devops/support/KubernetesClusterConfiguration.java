@@ -59,26 +59,32 @@ public class KubernetesClusterConfiguration extends GlobalConfiguration {
         k8sClusters.add(cluster);
         save();
 
-        new Thread(() -> triggerConfigChangeEvent(cluster)).start();
-    }
-
-
-    private void triggerConfigChangeEvent(KubernetesCluster cluster) {
-        ApiClient client = null;
         try {
-            client = Clients.getOrCreateClientFromCluster(cluster);
+            ApiClient client = Clients.getOrCreateClientFromCluster(cluster);
+            // If we have more clusters to config in the future, we may need to remove this.
+            Configuration.setDefaultApiClient(client);
+
+            new Thread(() -> triggerConfigChangeEvent(cluster, client)).start();
         } catch (KubernetesClientException e) {
             e.printStackTrace();
             logger.log(Level.SEVERE, String.format("Unable to create client from cluster %s, reason %s",  cluster.getMasterUrl(), e.getMessage()));;
+            new Thread(() -> triggerConfigErrorEvent(cluster)).start();
         }
-        // If we have more clusters to config in the future, we may need to remove this.
-        Configuration.setDefaultApiClient(client);
 
-        // Variable used in lambda should be final
-        ApiClient finalClient = client;
+
+    }
+
+
+    private void triggerConfigChangeEvent(KubernetesCluster cluster, ApiClient client) {
         KubernetesClusterConfigurationListener
                 .all()
                 .forEach(listener ->
-                        listener.onConfigChange(cluster, finalClient));
+                        listener.onConfigChange(cluster, client));
+    }
+
+    private void triggerConfigErrorEvent(KubernetesCluster cluster) {
+        KubernetesClusterConfigurationListener.all()
+                .forEach(listener ->
+                        listener.onConfigError(cluster));
     }
 }
