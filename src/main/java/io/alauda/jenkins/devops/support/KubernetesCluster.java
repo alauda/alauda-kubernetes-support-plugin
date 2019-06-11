@@ -9,7 +9,6 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import io.alauda.jenkins.devops.support.client.Clients;
 import io.alauda.jenkins.devops.support.exception.KubernetesClientException;
-import io.alauda.jenkins.devops.support.utils.CredentialsUtils;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.CoreV1Api;
@@ -20,8 +19,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.Objects;
 
 public class KubernetesCluster extends AbstractDescribableImpl<KubernetesCluster> {
@@ -117,7 +114,7 @@ public class KubernetesCluster extends AbstractDescribableImpl<KubernetesCluster
 
             ApiClient testClient;
             try {
-                testClient = Clients.getOrCreateClientFromConfig(masterUrl, credentialsId, serverCertificateAuthority, skipTlsVerify);
+                testClient = Clients.createClientFromConfig(masterUrl, credentialsId, serverCertificateAuthority, skipTlsVerify);
             } catch (KubernetesClientException e) {
                 e.printStackTrace();
                 return FormValidation.error(e.getMessage());
