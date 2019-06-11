@@ -1,14 +1,21 @@
-package io.alauda.jenkins.devops.config;
+package io.alauda.jenkins.devops.support;
 
 import hudson.Extension;
+import io.alauda.jenkins.devops.support.client.Clients;
+import io.alauda.jenkins.devops.support.exception.KubernetesClientException;
+import io.kubernetes.client.ApiClient;
+import io.kubernetes.client.Configuration;
 import jenkins.model.GlobalConfiguration;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Extension
 public class KubernetesClusterConfiguration extends GlobalConfiguration {
+    private static final Logger logger = Logger.getLogger(KubernetesClusterConfiguration.class.getName());
 
     // We might config multiple servers in the future, so we use list to store them
     private List<KubernetesCluster> k8sClusters = new LinkedList<>();
@@ -57,9 +64,21 @@ public class KubernetesClusterConfiguration extends GlobalConfiguration {
 
 
     private void triggerConfigChangeEvent(KubernetesCluster cluster) {
+        ApiClient client = null;
+        try {
+            client = Clients.getOrCreateClientFromCluster(cluster);
+        } catch (KubernetesClientException e) {
+            e.printStackTrace();
+            logger.log(Level.SEVERE, String.format("Unable to create client from cluster %s, reason %s",  cluster.getMasterUrl(), e.getMessage()));;
+        }
+        // If we have more clusters to config in the future, we may need to remove this.
+        Configuration.setDefaultApiClient(client);
+
+        // Variable used in lambda should be final
+        ApiClient finalClient = client;
         KubernetesClusterConfigurationListener
                 .all()
                 .forEach(listener ->
-                        listener.onConfigChange(cluster));
+                        listener.onConfigChange(cluster, finalClient));
     }
 }

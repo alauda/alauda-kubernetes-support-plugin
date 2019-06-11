@@ -1,4 +1,4 @@
-package io.alauda.jenkins.devops.config.utils;
+package io.alauda.jenkins.devops.support.utils;
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
