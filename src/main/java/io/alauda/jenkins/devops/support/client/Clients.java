@@ -73,8 +73,9 @@ public final class Clients {
                 } else {
                     buffer.writeUtf8(getCAFromLocalCluster());
                 }
-
-                client.setSslCaCert(buffer.inputStream());
+                if (buffer.size() != 0) {
+                    client.setSslCaCert(buffer.inputStream());
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 logger.log(Level.WARNING, String.format("Unable to get ca for k8s client, reason %s", e.getMessage()));
@@ -94,6 +95,9 @@ public final class Clients {
     }
 
 
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
+            value="DMI_HARDCODED_ABSOLUTE_FILENAME",
+            justification="I know what I'm doing")
     @Nonnull
     private static String getTokenFromLocalCluster() throws IOException {
         if (Files.exists(Paths.get(Config.SERVICEACCOUNT_TOKEN_PATH))) {
@@ -102,6 +106,9 @@ public final class Clients {
         throw new FileNotFoundException(String.format("Unable to get token from %s", Config.SERVICEACCOUNT_TOKEN_PATH));
     }
 
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
+            value="DMI_HARDCODED_ABSOLUTE_FILENAME",
+            justification="I know what I'm doing")
     @Nonnull
     private static String getCAFromLocalCluster() throws IOException {
         if (Files.exists(Paths.get(Config.SERVICEACCOUNT_CA_PATH))) {
