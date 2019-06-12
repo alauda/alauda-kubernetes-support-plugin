@@ -1,5 +1,7 @@
 ## Alauda Kubernetes Support Plugin
 
+This plugin allows user to config kubernetes and provide client for other plugins. Also, this plugin provides a controller interface that makes others to quickly implement a kubernetes controller.
+
 
 Example controller implementation:
 ```java
