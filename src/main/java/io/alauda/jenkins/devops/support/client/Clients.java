@@ -41,8 +41,7 @@ public final class Clients {
                 client = Config.fromCluster();
                 return client;
             } catch (IOException e) {
-                e.printStackTrace();
-                logger.log(Level.SEVERE, String.format("Unable to create a client from local cluster, reason %s", e.getMessage()));
+                logger.log(Level.SEVERE, String.format("Unable to create a client from local cluster, reason %s", e.getMessage()), e);
                 throw new KubernetesClientException(e);
             }
         }
@@ -55,8 +54,7 @@ public final class Clients {
                 token = CredentialsUtils.getToken(cluster.getCredentialsId());
             }
         } catch (GeneralSecurityException | IOException e) {
-            e.printStackTrace();
-            logger.log(Level.WARNING, String.format("Unable to get token for k8s client, reason %s", e.getMessage()));
+            logger.log(Level.WARNING, String.format("Unable to get token for k8s client, reason %s", e.getMessage()), e);
         }
         client = Config.fromToken(cluster.getMasterUrl(), token, !cluster.isSkipTlsVerify());
 
@@ -77,8 +75,7 @@ public final class Clients {
                     client.setSslCaCert(buffer.inputStream());
                 }
             } catch (IOException e) {
-                e.printStackTrace();
-                logger.log(Level.WARNING, String.format("Unable to get ca for k8s client, reason %s", e.getMessage()));
+                logger.log(Level.WARNING, String.format("Unable to get ca for k8s client, reason %s", e.getMessage()), e);
             }
         }
         return client;

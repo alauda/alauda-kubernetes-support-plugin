@@ -32,6 +32,7 @@ public class ControllerManager implements KubernetesClusterConfigurationListener
         if (factory != null) {
             factory.stopAllRegisteredInformers();
         }
+        factory = new SharedInformerFactory();
 
         ExtensionList<Controller> controllers = Controller.all();
 
@@ -44,18 +45,17 @@ public class ControllerManager implements KubernetesClusterConfigurationListener
         logger.log(Level.FINE, "Start factories");
         factory.startAllRegisteredInformers();
 
-        // We wait all controller synced in another thread, so we won't block other ConfigLister to receive event
-        new Thread(() -> {
+        // We wait all controller synced in another thread, so we won't block other ConfigListener to receive event
+        ExecutorService executor = Executors.newFixedThreadPool(controllers.size());
+        controllers.forEach(c -> executor.submit(() -> {
             try {
-                waitUtilCacheSync(controllers);
-                controllers.forEach(c -> {
-                    logger.log(Level.FINE, "Starting worker: %s ...", c.getType().getTypeName());
-                    c.start();
-                });
-            } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
+                waitUntilCacheSynced(c);
+                c.start();
+            } catch (ExecutionException | TimeoutException |InterruptedException e) {
+                logger.log(Level.SEVERE, String.format("Unable to start controller: %s, reason: %s", c.getType().getTypeName(), e.getMessage()), e);
+                c.shutDown(e);
             }
-        }).start();
+        }));
     }
 
     @Override
@@ -64,12 +64,12 @@ public class ControllerManager implements KubernetesClusterConfigurationListener
         controllers.forEach(c -> c.shutDown(reason));
     }
 
-    private void waitUtilCacheSync(ExtensionList<Controller> controllers) throws ExecutionException, InterruptedException {
+    private void waitUntilCacheSynced(Controller controller) throws ExecutionException, InterruptedException, TimeoutException {
         ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
         CompletableFuture<Void> allControllerSyncedFuture = new CompletableFuture<>();
 
         ScheduledFuture scheduledFuture = scheduledExecutor.scheduleAtFixedRate(() -> {
-            if (controllers.stream().allMatch(Controller::hasSynced)) {
+            if (controller.hasSynced()) {
                 allControllerSyncedFuture.complete(null);
             }
         }, DEFAULT_POLLING_RATE, DEFAULT_POLLING_RATE, TimeUnit.MILLISECONDS);
@@ -78,6 +78,7 @@ public class ControllerManager implements KubernetesClusterConfigurationListener
         // When all controllers synced, we cancel the schedule task
         allControllerSyncedFuture.whenComplete((v, throwable) -> scheduledFuture.cancel(true));
 
-        allControllerSyncedFuture.get();
+        allControllerSyncedFuture.get(5, TimeUnit.MINUTES);
     }
+
 }
