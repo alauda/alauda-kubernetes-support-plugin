@@ -7,7 +7,7 @@ import io.kubernetes.client.ApiClient;
 public interface KubernetesClusterConfigurationListener extends ExtensionPoint {
     void onConfigChange(KubernetesCluster cluster, ApiClient client);
 
-    void onConfigError(KubernetesCluster cluster);
+    void onConfigError(KubernetesCluster cluster, Throwable reason);
 
     static ExtensionList<KubernetesClusterConfigurationListener> all() {
         return ExtensionList.lookup(KubernetesClusterConfigurationListener.class);

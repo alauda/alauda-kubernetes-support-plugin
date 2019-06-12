@@ -61,8 +61,9 @@ public final class Clients {
         client = Config.fromToken(cluster.getMasterUrl(), token, !cluster.isSkipTlsVerify());
 
         if (!cluster.isSkipTlsVerify()) {
-            Buffer buffer = new Buffer();
             try {
+                Buffer buffer = new Buffer();
+
                 if (!StringUtils.isEmpty(cluster.getServerCertificateAuthority())) {
                     if (new File(cluster.getServerCertificateAuthority()).isFile()) {
                         buffer.write(Files.readAllBytes(Paths.get(cluster.getServerCertificateAuthority())));
@@ -73,11 +74,11 @@ public final class Clients {
                     buffer.writeUtf8(getCAFromLocalCluster());
                 }
 
+                client.setSslCaCert(buffer.inputStream());
             } catch (IOException e) {
                 e.printStackTrace();
                 logger.log(Level.WARNING, String.format("Unable to get ca for k8s client, reason %s", e.getMessage()));
             }
-            client.setSslCaCert(buffer.inputStream());
         }
         return client;
     }
