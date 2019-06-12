@@ -27,7 +27,7 @@ else
     issuer=""
 fi
 
-export target_file=$(dirname "${BASH_SOURCE[0]}")"/../target/kubernetes-configuration.hpi"
+export target_file=$(dirname "${BASH_SOURCE[0]}")"/../target/alauda-kubernetes-support.hpi"
 echo "target file is $target_file"
 
 # support fetch plugin from the remote server
