@@ -88,15 +88,17 @@ pipeline {
 
 					archiveArtifacts 'target/*.hpi'
 
-					IMAGE = deploy.dockerBuild(
-							"./build/docker/alauda-devops-support.Dockerfile", //Dockerfile
-							".", // build context
-							IMAGE_REPOSITORY, // repo address
-							RELEASE_BUILD, // tag
-							IMAGE_CREDENTIALS, // credentials for pushing
-					)
-					// start and push
-					IMAGE.start().push()
+					container('tools') {
+						IMAGE = deploy.dockerBuild(
+								"./build/docker/alauda-devops-support.Dockerfile", //Dockerfile
+								".", // build context
+								IMAGE_REPOSITORY, // repo address
+								RELEASE_BUILD, // tag
+								IMAGE_CREDENTIALS, // credentials for pushing
+						)
+						// start and push
+						IMAGE.start().push()
+					}
 				}
 			}
 		}
