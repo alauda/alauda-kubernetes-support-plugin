@@ -10,6 +10,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +29,13 @@ public class KubernetesClusterConfiguration extends GlobalConfiguration {
     public KubernetesClusterConfiguration() {
         // When Jenkins is restarted, load any saved configuration from disk.
         load();
+
+        if (k8sClusters.size() == 0) {
+            setCluster(new KubernetesCluster());
+        } else {
+            triggerEvents(k8sClusters.get(0));
+        }
+
     }
 
     public KubernetesCluster getCluster() {
@@ -59,8 +67,14 @@ public class KubernetesClusterConfiguration extends GlobalConfiguration {
         k8sClusters.add(cluster);
         save();
 
+        triggerEvents(cluster);
+    }
+
+
+    private void triggerEvents(KubernetesCluster cluster) {
         try {
             ApiClient client = Clients.createClientFromCluster(cluster);
+            client.getHttpClient().setReadTimeout(0, TimeUnit.SECONDS);
             // If we have more clusters to config in the future, we may need to remove this.
             Configuration.setDefaultApiClient(client);
 
@@ -68,10 +82,8 @@ public class KubernetesClusterConfiguration extends GlobalConfiguration {
         } catch (KubernetesClientException e) {
             e.printStackTrace();
             logger.log(Level.SEVERE, String.format("Unable to create client from cluster %s, reason %s",  cluster.getMasterUrl(), e.getMessage()));;
-            new Thread(() -> triggerConfigErrorEvent(cluster)).start();
+            new Thread(() -> triggerConfigErrorEvent(cluster, e)).start();
         }
-
-
     }
 
 
@@ -82,9 +94,9 @@ public class KubernetesClusterConfiguration extends GlobalConfiguration {
                         listener.onConfigChange(cluster, client));
     }
 
-    private void triggerConfigErrorEvent(KubernetesCluster cluster) {
+    private void triggerConfigErrorEvent(KubernetesCluster cluster, Throwable reason) {
         KubernetesClusterConfigurationListener.all()
                 .forEach(listener ->
-                        listener.onConfigError(cluster));
+                        listener.onConfigError(cluster, reason));
     }
 }

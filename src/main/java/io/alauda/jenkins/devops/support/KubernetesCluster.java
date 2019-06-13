@@ -96,8 +96,6 @@ public class KubernetesCluster extends AbstractDescribableImpl<KubernetesCluster
                         .includeCurrentValue(credentialsId);
             }
 
-
-
             return new StandardListBoxModel()
                     .includeEmptyValue()
                     .includeAs(ACL.SYSTEM, Jenkins.getInstance(),
@@ -111,6 +109,7 @@ public class KubernetesCluster extends AbstractDescribableImpl<KubernetesCluster
                                               @QueryParameter String serverCertificateAuthority,
                                               @QueryParameter boolean skipTlsVerify) {
 
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
             ApiClient testClient;
             try {
