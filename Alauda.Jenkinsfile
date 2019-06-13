@@ -47,7 +47,7 @@ pipeline {
 		IN_K8S = "true"
 
 		// charts pipeline name
-		CHARTS_PIPELINE = "/devops/devops-alauda-jenkins"
+		CHARTS_PIPELINE = "/devops/devops-alauda-jenkins/master"
 		CHART_COMPONENT = "alauda-kubernetes-support-plugin"
 	}
 	// stages
@@ -78,18 +78,6 @@ pipeline {
 			}
 		}
 		stage('Build') {
-			when {
-				anyOf {
-					changeset '**/**/*.java'
-					changeset '**/**/*.xml'
-					changeset '**/**/*.jelly'
-					changeset '**/**/*.properties'
-					changeset '**/**/*.png'
-					expression {
-						return params.forceReBuild
-					}
-				}
-			}
 			steps {
 				script {
 					container('java'){
@@ -114,14 +102,6 @@ pipeline {
 		}
 		// sonar scan
 		stage('Sonar') {
-			when {
-				anyOf {
-					changeset '**/**/*.java'
-					expression {
-						return params.forceSonarScan
-					}
-				}
-			}
 			steps {
 				script {
 					deploy.scan(
@@ -135,33 +115,9 @@ pipeline {
 				}
 			}
 		}
-
-		stage('Tag git') {
-			when {
-				expression {
-					release.shouldTag()
-				}
-			}
-			steps {
-				script {
-					dir(FOLDER) {
-						container('tools') {
-							deploy.gitTag(
-									TAG_CREDENTIALS,
-									RELEASE_BUILD,
-									OWNER,
-									REPOSITORY
-							)
-						}
-					}
-				}
-			}
-		}
-
 		stage('Chart Update') {
 			when {
 				expression {
-					// TODO: Change when charts are ready
 					release.shouldUpdateChart()
 				}
 			}
