@@ -56,10 +56,6 @@ pipeline {
 			steps {
 				script {
 					// checkout code
-					withCredentials([
-							usernamePassword(credentialsId: PROXY_CREDENTIALS_ID, passwordVariable: 'PROXY_ADDRESS', usernameVariable: 'PROXY_ADDRESS_PASS')
-					]) { PROXY_CREDENTIALS = "${PROXY_ADDRESS}" }
-					sh "git config --global http.proxy ${PROXY_CREDENTIALS}"
 					def scmVars = checkout scm
 
 					release = deploy.release(scmVars)
