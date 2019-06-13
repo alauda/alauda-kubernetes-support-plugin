@@ -4,10 +4,10 @@
 
 // global variables for pipeline
 def GIT_BRANCH
-def GIT_COMMIT
 def FOLDER = "."
 def DEBUG = false
-def deployment
+def release
+def IMAGE
 def RELEASE_VERSION
 def RELEASE_BUILD
 pipeline {
@@ -26,9 +26,9 @@ pipeline {
 	}
 
 	parameters {
-	    booleanParam defaultValue: false, description: 'Rebuild and archive artifacts if this flag is true.', name: 'forceReBuild'
-	    booleanParam defaultValue: false, description: 'Force execute sonar scan if this flag is true.', name: 'forceSonarScan'
-    }
+		booleanParam defaultValue: false, description: 'Rebuild and archive artifacts if this flag is true.', name: 'forceReBuild'
+		booleanParam defaultValue: false, description: 'Force execute sonar scan if this flag is true.', name: 'forceSonarScan'
+	}
 
 	//(optional) 环境变量
 	environment {
@@ -40,8 +40,15 @@ pipeline {
 		SCM_FEEDBACK_ACCOUNT = "alaudabot"
 		SONARQUBE_SCM_CREDENTIALS = "alaudabot"
 		DEPLOYMENT = "alauda-kubernetes-support-plugin"
+		IMAGE_REPOSITORY = "index.alauda.cn/alaudak8s/alauda-kubernetes-support"
+		IMAGE_CREDENTIALS = "alaudak8s"
 		DINGDING_BOT = "devops-chat-bot"
 		TAG_CREDENTIALS = "alaudabot-github"
+		IN_K8S = "true"
+
+		// charts pipeline name
+		CHARTS_PIPELINE = "/devops/devops-alauda-jenkins"
+		CHART_COMPONENT = "alauda-kubernetes-support-plugin"
 	}
 	// stages
 	stages {
@@ -49,83 +56,126 @@ pipeline {
 			steps {
 				script {
 					// checkout code
+					withCredentials([
+							usernamePassword(credentialsId: PROXY_CREDENTIALS_ID, passwordVariable: 'PROXY_ADDRESS', usernameVariable: 'PROXY_ADDRESS_PASS')
+					]) { PROXY_CREDENTIALS = "${PROXY_ADDRESS}" }
+					sh "git config --global http.proxy ${PROXY_CREDENTIALS}"
 					def scmVars = checkout scm
-					// extract git information
-					env.GIT_COMMIT = scmVars.GIT_COMMIT
-					env.GIT_BRANCH = scmVars.GIT_BRANCH
-					GIT_COMMIT = "${scmVars.GIT_COMMIT}"
-					GIT_BRANCH = "${scmVars.GIT_BRANCH}"
-					pom = readMavenPom file: 'pom.xml'
-					//RELEASE_VERSION = pom.properties['revision'] + pom.properties['sha1'] + pom.properties['changelist']
-					RELEASE_VERSION = pom.version
-				}
-				container('golang'){
-                    // installing golang coverage and report tools
-                    sh "go get -u github.com/alauda/gitversion"
-                    script {
-                        if (GIT_BRANCH != "master") {
-                            def branch = GIT_BRANCH.replace("/","-").replace("_","-")
-                            RELEASE_BUILD = "${RELEASE_VERSION}.${branch}.${env.BUILD_NUMBER}"
-                        } else {
-                            sh "gitversion patch ${RELEASE_VERSION} > patch"
-                            RELEASE_BUILD = readFile("patch").trim()
-                        }
 
-                        sh '''
-                            echo "commit=$GIT_COMMIT" > src/main/resources/debug.properties
-                            echo "build=$RELEASE_BUILD" >> src/main/resources/debug.properties
-                            echo "version=RELEASE_VERSION" >> src/main/resources/debug.properties
-                            cat src/main/resources/debug.properties
-                        '''
-                    }
+					release = deploy.release(scmVars)
+
+					RELEASE_BUILD = release.version
+					RELEASE_VERSION = release.majorVersion
+					// echo "release ${RELEASE_VERSION} - release build ${RELEASE_BUILD}"
+					echo """
+						release ${RELEASE_VERSION}
+						version ${release.version}
+						is_release ${release.is_release}
+						is_build ${release.is_build}
+						is_master ${release.is_master}
+						deploy_env ${release.environment}
+						auto_test ${release.auto_test}
+						environment ${release.environment}
+						majorVersion ${release.majorVersion}
+					"""
 				}
 			}
 		}
-        stage('Build') {
-            when {
-                anyOf {
-                    changeset '**/**/*.java'
-                    changeset '**/**/*.xml'
-                    changeset '**/**/*.jelly'
-                    changeset '**/**/*.properties'
-                    changeset '**/**/*.png'
-                    expression {
-                        return params.forceReBuild
-                    }
-                }
-            }
-            steps {
-                script {
-                    container('java'){
-                        sh """
+		stage('Build') {
+			when {
+				anyOf {
+					changeset '**/**/*.java'
+					changeset '**/**/*.xml'
+					changeset '**/**/*.jelly'
+					changeset '**/**/*.properties'
+					changeset '**/**/*.png'
+					expression {
+						return params.forceReBuild
+					}
+				}
+			}
+			steps {
+				script {
+					container('java'){
+						sh """
                             mvn clean install -U findbugs:findbugs -Dmaven.test.skip=true
                         """
-                    }
+					}
 
-                    archiveArtifacts 'target/*.hpi'
-                }
-            }
-        }
+					archiveArtifacts 'target/*.hpi'
+
+					IMAGE = deploy.dockerBuild(
+							"./build/docker/alauda-devops-support.Dockerfile", //Dockerfile
+							".", // build context
+							IMAGE_REPOSITORY, // repo address
+							RELEASE_BUILD, // tag
+							IMAGE_CREDENTIALS, // credentials for pushing
+					)
+					// start and push
+					IMAGE.start().push()
+				}
+			}
+		}
 		// sonar scan
 		stage('Sonar') {
-		    when {
-                anyOf {
-                    changeset '**/**/*.java'
-                    expression {
-                        return params.forceSonarScan
-                    }
-                }
-		    }
+			when {
+				anyOf {
+					changeset '**/**/*.java'
+					expression {
+						return params.forceSonarScan
+					}
+				}
+			}
 			steps {
 				script {
 					deploy.scan(
-						REPOSITORY,
-						GIT_BRANCH,
-						SONARQUBE_SCM_CREDENTIALS,
-						FOLDER,
-						DEBUG,
-						OWNER,
-						SCM_FEEDBACK_ACCOUNT).startToSonar()
+							REPOSITORY,
+							GIT_BRANCH,
+							SONARQUBE_SCM_CREDENTIALS,
+							FOLDER,
+							DEBUG,
+							OWNER,
+							SCM_FEEDBACK_ACCOUNT).startToSonar()
+				}
+			}
+		}
+
+		stage('Tag git') {
+			when {
+				expression {
+					release.shouldTag()
+				}
+			}
+			steps {
+				script {
+					dir(FOLDER) {
+						container('tools') {
+							deploy.gitTag(
+									TAG_CREDENTIALS,
+									RELEASE_BUILD,
+									OWNER,
+									REPOSITORY
+							)
+						}
+					}
+				}
+			}
+		}
+
+		stage('Chart Update') {
+			when {
+				expression {
+					// TODO: Change when charts are ready
+					release.shouldUpdateChart()
+				}
+			}
+			steps {
+				script {
+					echo "will trigger charts-pipeline using branch ${release.chartBranch}"
+
+					build job: CHARTS_PIPELINE, parameters: [
+							[$class: 'StringParameterValue', name: 'PLUGIN', value: IMAGE_REPOSITORY+":"+RELEASE_BUILD],
+					], wait: false
 				}
 			}
 		}
@@ -146,8 +196,8 @@ pipeline {
 			// check the npm log
 			// fails lets check if it
 			script {
-			    echo "damn!"
-			    deploy.notificationFailed(DEPLOYMENT, DINGDING_BOT, "流水线失败了", RELEASE_BUILD)
+				echo "damn!"
+				deploy.notificationFailed(DEPLOYMENT, DINGDING_BOT, "流水线失败了", RELEASE_BUILD)
 			}
 		}
 		always { junit allowEmptyResults: true, testResults: '**/target/surefire-reports/**/*.xml' }
