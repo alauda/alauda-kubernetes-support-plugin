@@ -31,7 +31,11 @@ public class KubernetesClusterConfiguration extends GlobalConfiguration {
         load();
 
         if (k8sClusters.size() == 0) {
-            setCluster(new KubernetesCluster());
+            KubernetesCluster cluster = new KubernetesCluster();
+            // WARN once we support multi-cluster configuration, you should change this behavior
+            cluster.setDefaultCluster(true);
+            cluster.setManagerCluster(true);
+            setCluster(cluster);
         } else {
             triggerEvents(k8sClusters.get(0));
         }

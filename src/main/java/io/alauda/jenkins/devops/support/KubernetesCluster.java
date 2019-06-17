@@ -26,7 +26,8 @@ public class KubernetesCluster extends AbstractDescribableImpl<KubernetesCluster
     private String credentialsId;
     private boolean skipTlsVerify = false;
     private String serverCertificateAuthority;
-
+    private boolean defaultCluster = false;
+    private boolean managerCluster = false;
 
     @DataBoundConstructor
     public KubernetesCluster() {
@@ -63,8 +64,27 @@ public class KubernetesCluster extends AbstractDescribableImpl<KubernetesCluster
         return serverCertificateAuthority;
     }
 
+    @DataBoundSetter
     public void setServerCertificateAuthority(String serverCertificateAuthority) {
         this.serverCertificateAuthority = serverCertificateAuthority;
+    }
+
+    public boolean isDefaultCluster() {
+        return defaultCluster;
+    }
+
+    @DataBoundSetter
+    public void setDefaultCluster(boolean defaultCluster) {
+        this.defaultCluster = defaultCluster;
+    }
+
+    public boolean isManagerCluster() {
+        return managerCluster;
+    }
+
+    @DataBoundSetter
+    public void setManagerCluster(boolean managerCluster) {
+        this.managerCluster = managerCluster;
     }
 
     @Override
