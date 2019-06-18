@@ -13,6 +13,14 @@
     <f:entry title="${%Server Certificate Authority}" field="serverCertificateAuthority">
         <f:textarea/>
     </f:entry>
+    <f:advanced>
+        <f:entry title="${%As Default Cluster}" field="defaultCluster">
+            <f:checkbox/>
+        </f:entry>
+        <f:entry title="${%As Manager Cluster}" field="managerCluster">
+            <f:checkbox/>
+        </f:entry>
+    </f:advanced>
     <f:validateButton title="${%Test Connection}" method="verifyConnect"
                       with="masterUrl,credentialsId,serverCertificateAuthority,skipTlsVerify" progress="Testing..."/>
 </j:jelly>
