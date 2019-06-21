@@ -106,6 +106,23 @@ pipeline {
                 }
             }
         }
+        stage('Release') {
+            when {
+                expression {
+                    GIT_BRANCH == "master"
+                }
+            }
+            steps {
+                script {
+                    container('java'){
+                        if(RELEASE_VERSION.endsWith('-SNAPSHOT')){
+                            sh 'mvn clean deploy -U -DskipTests'
+                        } else {
+                        }
+                    }
+                }
+            }
+        }
 		// sonar scan
 		stage('Sonar') {
 		    when {
