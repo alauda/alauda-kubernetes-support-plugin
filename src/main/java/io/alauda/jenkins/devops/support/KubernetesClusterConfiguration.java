@@ -3,6 +3,7 @@ package io.alauda.jenkins.devops.support;
 import hudson.Extension;
 import io.alauda.jenkins.devops.support.client.Clients;
 import io.alauda.jenkins.devops.support.exception.KubernetesClientException;
+import io.alauda.jenkins.devops.support.utils.SyncPluginConfigurationCompatiblilityMigrater;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.Configuration;
 import jenkins.model.GlobalConfiguration;
@@ -14,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Extension
+@Extension(ordinal = 203)
 public class KubernetesClusterConfiguration extends GlobalConfiguration {
     private static final Logger logger = Logger.getLogger(KubernetesClusterConfiguration.class.getName());
 
@@ -29,6 +30,14 @@ public class KubernetesClusterConfiguration extends GlobalConfiguration {
     public KubernetesClusterConfiguration() {
         // When Jenkins is restarted, load any saved configuration from disk.
         load();
+        KubernetesCluster clusterMigrateFromSync = SyncPluginConfigurationCompatiblilityMigrater.migrateConfigurationFromSyncPlugin();
+        if (clusterMigrateFromSync != null) {
+            clusterMigrateFromSync.setDefaultCluster(true);
+            clusterMigrateFromSync.setManagerCluster(true);
+            setCluster(clusterMigrateFromSync);
+            return;
+        }
+
 
         if (k8sClusters.size() == 0) {
             KubernetesCluster cluster = new KubernetesCluster();
