@@ -91,16 +91,18 @@ public class KubernetesCluster extends AbstractDescribableImpl<KubernetesCluster
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        KubernetesCluster that = (KubernetesCluster) o;
-        return skipTlsVerify == that.skipTlsVerify &&
-                Objects.equals(masterUrl, that.masterUrl) &&
-                Objects.equals(credentialsId, that.credentialsId) &&
-                Objects.equals(serverCertificateAuthority, that.serverCertificateAuthority);
+        KubernetesCluster cluster = (KubernetesCluster) o;
+        return skipTlsVerify == cluster.skipTlsVerify &&
+                defaultCluster == cluster.defaultCluster &&
+                managerCluster == cluster.managerCluster &&
+                Objects.equals(masterUrl, cluster.masterUrl) &&
+                Objects.equals(credentialsId, cluster.credentialsId) &&
+                Objects.equals(serverCertificateAuthority, cluster.serverCertificateAuthority);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(masterUrl, credentialsId, skipTlsVerify, serverCertificateAuthority);
+        return Objects.hash(masterUrl, credentialsId, skipTlsVerify, serverCertificateAuthority, defaultCluster, managerCluster);
     }
 
     @Extension
