@@ -144,7 +144,7 @@ public class KubernetesCluster extends AbstractDescribableImpl<KubernetesCluster
             CoreV1Api api = new CoreV1Api(testClient);
             V1NamespaceList list;
             try {
-                list = api.listNamespace(null, null, null, null, null, null, null, null, null);
+                list = api.listNamespace(null, null, null, null, null, null, null, null);
             } catch (ApiException e) {
                 return FormValidation.error(e.getMessage());
             }
