@@ -106,23 +106,23 @@ pipeline {
                 }
             }
         }
-        stage('Release') {
-            when {
-                expression {
-                    GIT_BRANCH == "master"
-                }
-            }
-            steps {
-                script {
-                    container('java'){
-                        if(RELEASE_VERSION.endsWith('-SNAPSHOT')){
-                            sh 'mvn clean deploy -U -DskipTests'
-                        } else {
-                        }
-                    }
-                }
-            }
-        }
+//        stage('Release') {
+//            when {
+//                expression {
+//                    GIT_BRANCH == "master"
+//                }
+//            }
+//            steps {
+//                script {
+//                    container('java'){
+//                        if(RELEASE_VERSION.endsWith('-SNAPSHOT')){
+//                            sh 'mvn clean deploy -U -DskipTests'
+//                        } else {
+//                        }
+//                    }
+//                }
+//            }
+//        }
 		// sonar scan
 		stage('Sonar') {
 		    when {
@@ -135,14 +135,16 @@ pipeline {
 		    }
 			steps {
 				script {
-					deploy.scan(
-						REPOSITORY,
-						GIT_BRANCH,
-						SONARQUBE_SCM_CREDENTIALS,
-						FOLDER,
-						DEBUG,
-						OWNER,
-						SCM_FEEDBACK_ACCOUNT).startToSonar()
+					container('tools') {
+						deploy.scan(
+								REPOSITORY,
+								GIT_BRANCH,
+								SONARQUBE_SCM_CREDENTIALS,
+								FOLDER,
+								DEBUG,
+								OWNER,
+								SCM_FEEDBACK_ACCOUNT).start()
+					}
 				}
 			}
 		}

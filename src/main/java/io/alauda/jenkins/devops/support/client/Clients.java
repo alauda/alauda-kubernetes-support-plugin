@@ -93,8 +93,8 @@ public final class Clients {
 
 
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
-            value="DMI_HARDCODED_ABSOLUTE_FILENAME",
-            justification="I know what I'm doing")
+            value = "DMI_HARDCODED_ABSOLUTE_FILENAME",
+            justification = "I know what I'm doing")
     @Nonnull
     private static String getTokenFromLocalCluster() throws IOException {
         if (Files.exists(Paths.get(Config.SERVICEACCOUNT_TOKEN_PATH))) {
@@ -104,8 +104,8 @@ public final class Clients {
     }
 
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
-            value="DMI_HARDCODED_ABSOLUTE_FILENAME",
-            justification="I know what I'm doing")
+            value = "DMI_HARDCODED_ABSOLUTE_FILENAME",
+            justification = "I know what I'm doing")
     @Nonnull
     private static String getCAFromLocalCluster() throws IOException {
         if (Files.exists(Paths.get(Config.SERVICEACCOUNT_CA_PATH))) {
