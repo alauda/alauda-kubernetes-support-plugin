@@ -2,6 +2,7 @@ package io.alauda.jenkins.devops.support.utils;
 
 import io.alauda.jenkins.devops.support.KubernetesCluster;
 import jenkins.model.Jenkins;
+import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -10,12 +11,15 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -82,7 +86,7 @@ public class SyncPluginConfigurationCompatiblilityMigrater {
         Transformer transformer = TransformerFactory.newInstance().newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
-        StreamResult result = new StreamResult(new FileWriter(xml));
+        StreamResult result = new StreamResult(new FileWriterWithEncoding(xml, StandardCharsets.UTF_8));
         DOMSource source = new DOMSource(document);
 
         transformer.transform(source, result);
