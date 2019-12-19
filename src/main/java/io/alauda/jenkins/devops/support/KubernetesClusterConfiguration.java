@@ -93,7 +93,6 @@ public class KubernetesClusterConfiguration extends GlobalConfiguration {
 
             new Thread(() -> triggerConfigChangeEvent(cluster, client)).start();
         } catch (KubernetesClientException e) {
-            e.printStackTrace();
             logger.log(Level.SEVERE, String.format("Unable to create client from cluster %s, reason %s", cluster.getMasterUrl(), e.getMessage()));
             new Thread(() -> triggerConfigErrorEvent(cluster, e)).start();
         }
