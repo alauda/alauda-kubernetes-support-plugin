@@ -50,10 +50,10 @@
     </snapshotRepository>
   </distributionManagement>
   <properties>
-    <revision>2.6</revision>
+    <revision>2.7</revision>
     <changelist>-SNAPSHOT</changelist>
-    <java.level>8</java.level>
     <jenkins.version>2.83</jenkins.version>
+    <java.level>8</java.level>
     <sha1></sha1>
   </properties>
   <dependencies>
@@ -158,9 +158,9 @@
         <snapshots.url>https://nexus.acp.alauda.cn/repository/maven-snapshots/</snapshots.url>
         <releases.id>nexus.acp.alauda.cn</releases.id>
         <snapshots.id>nexus.acp.alauda.cn</snapshots.id>
-        <snapshots.name>nexus.acp.alauda.cn</snapshots.name>
-        <releases.url>https://nexus.acp.alauda.cn/repository/maven-incrementals/</releases.url>
         <releases.name>nexus.acp.alauda.cn</releases.name>
+        <releases.url>https://nexus.acp.alauda.cn/repository/maven-incrementals/</releases.url>
+        <snapshots.name>nexus.acp.alauda.cn</snapshots.name>
       </properties>
     </profile>
     <profile>
@@ -171,9 +171,9 @@
         <snapshots.url>https://nexus.acp.alauda.cn/repository/maven-snapshots/</snapshots.url>
         <releases.id>nexus.acp.alauda.cn</releases.id>
         <snapshots.id>nexus.acp.alauda.cn</snapshots.id>
-        <snapshots.name>nexus.acp.alauda.cn</snapshots.name>
-        <releases.url>https://nexus.acp.alauda.cn/repository/maven-releases/</releases.url>
         <releases.name>nexus.acp.alauda.cn</releases.name>
+        <releases.url>https://nexus.acp.alauda.cn/repository/maven-releases/</releases.url>
+        <snapshots.name>nexus.acp.alauda.cn</snapshots.name>
       </properties>
     </profile>
   </profiles>
