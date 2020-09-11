@@ -84,7 +84,7 @@ public class KubernetesClusterConfiguration extends GlobalConfiguration {
     }
 
 
-    private void triggerEvents(KubernetesCluster cluster) {
+    public void triggerEvents(KubernetesCluster cluster) {
         try {
             ApiClient client = Clients.createClientFromCluster(cluster);
             client.getHttpClient().setReadTimeout(0, TimeUnit.SECONDS);
