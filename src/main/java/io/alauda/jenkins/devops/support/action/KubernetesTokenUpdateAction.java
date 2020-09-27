@@ -1,6 +1,7 @@
 package io.alauda.jenkins.devops.support.action;
 
-import com.cloudbees.plugins.credentials.Credentials;
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.SystemCredentialsProvider;
 import hudson.Extension;
@@ -21,14 +22,19 @@ import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.CoreV1Api;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import jenkins.model.Jenkins;
 import jenkins.model.identity.IdentityRootAction;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -99,12 +105,24 @@ public class KubernetesTokenUpdateAction implements UnprotectedRootAction {
     }
 
     try (ACLContext ignore = ACL.as(ACL.SYSTEM)) {
-      Credentials c = new StringCredentialsImpl(CredentialsScope.GLOBAL, CREDENTIALS_ID,
+      List<StringCredentials> credentialsListWithSameID = CredentialsMatchers.filter(
+          CredentialsProvider
+              .lookupCredentials(StringCredentials.class, Jenkins.getInstance(), ACL.SYSTEM,
+                  Collections
+                      .emptyList()),
+          CredentialsMatchers.withId(CREDENTIALS_ID));
+
+      SystemCredentialsProvider systemCredentialsProvider = SystemCredentialsProvider.getInstance();
+      if (!CollectionUtils.isEmpty(credentialsListWithSameID)) {
+        systemCredentialsProvider.getCredentials().removeAll(credentialsListWithSameID);
+      }
+
+      StringCredentials operatorCredentials = new StringCredentialsImpl(CredentialsScope.GLOBAL,
+          CREDENTIALS_ID,
           "Token auto-injected by DevOps Controller for Jenkins Operator",
           Secret.fromString(token));
 
-      SystemCredentialsProvider systemCredentialsProvider = SystemCredentialsProvider.getInstance();
-      systemCredentialsProvider.getCredentials().add(c);
+      systemCredentialsProvider.getCredentials().add(operatorCredentials);
       systemCredentialsProvider.save();
     } catch (IOException e) {
       return HttpResponses
@@ -167,7 +185,8 @@ public class KubernetesTokenUpdateAction implements UnprotectedRootAction {
   public static class KubernetesTokenUpdateActionCrumbExclusion extends CrumbExclusion {
 
     @Override
-    public boolean process(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws IOException, ServletException {
+    public boolean process(HttpServletRequest req, HttpServletResponse resp, FilterChain chain)
+        throws IOException, ServletException {
       String pathInfo = req.getPathInfo();
       if (pathInfo != null && pathInfo.startsWith(getExclusionPath())) {
         chain.doFilter(req, resp);
