@@ -94,9 +94,8 @@ public class KubernetesTokenUpdateAction implements UnprotectedRootAction {
       String oldToken = "";
       try {
         oldToken = CredentialsUtils.getToken(cluster.getCredentialsId());
-      } catch (GeneralSecurityException e) {
-        return HttpResponses
-            .errorJSON(String.format("Failed to update token, reason %s", e.getMessage()));
+      } catch (GeneralSecurityException ignore) {
+        // ignore the not found error as we will override the credentials anyway
       }
 
       if (oldToken.equals(token)) {
