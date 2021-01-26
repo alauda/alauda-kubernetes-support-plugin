@@ -9,10 +9,10 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import io.alauda.jenkins.devops.support.client.Clients;
 import io.alauda.jenkins.devops.support.exception.KubernetesClientException;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.CoreV1Api;
-import io.kubernetes.client.models.V1NamespaceList;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.models.V1NamespaceList;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -144,7 +144,7 @@ public class KubernetesCluster extends AbstractDescribableImpl<KubernetesCluster
             CoreV1Api api = new CoreV1Api(testClient);
             V1NamespaceList list;
             try {
-                list = api.listNamespace(null, null, null, null, null, null, null, null);
+                list = api.listNamespace(null, null, null, null, null, null, null, null, null, null);
             } catch (ApiException e) {
                 return FormValidation.error(e.getMessage());
             }

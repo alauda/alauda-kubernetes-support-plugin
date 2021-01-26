@@ -17,9 +17,9 @@ import io.alauda.jenkins.devops.support.KubernetesClusterConfiguration;
 import io.alauda.jenkins.devops.support.client.Clients;
 import io.alauda.jenkins.devops.support.exception.KubernetesClientException;
 import io.alauda.jenkins.devops.support.utils.CredentialsUtils;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.CoreV1Api;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
@@ -155,7 +155,7 @@ public class KubernetesTokenUpdateAction implements UnprotectedRootAction {
     CoreV1Api api = new CoreV1Api(client);
 
     try {
-      api.listNamespace(null, null, null, null, null, null, null, null);
+      api.listNamespace(null, null, null, null,  null,null, null, null, null, null);
     } catch (ApiException e) {
       throw new KubernetesClientException(
           String.format("Unable to connect to cluster %s", cluster.getMasterUrl()), e);

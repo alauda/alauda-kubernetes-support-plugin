@@ -3,16 +3,16 @@ package io.alauda.jenkins.devops.support.client;
 import io.alauda.jenkins.devops.support.KubernetesCluster;
 import io.alauda.jenkins.devops.support.exception.KubernetesClientException;
 import io.alauda.jenkins.devops.support.utils.CredentialsUtils;
-import io.kubernetes.client.ApiClient;
+import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.util.Config;
 import okio.Buffer;
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.remoting.util.Charsets;
 
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
@@ -98,7 +98,7 @@ public final class Clients {
     @Nonnull
     private static String getTokenFromLocalCluster() throws IOException {
         if (Files.exists(Paths.get(Config.SERVICEACCOUNT_TOKEN_PATH))) {
-            return new String(Files.readAllBytes(Paths.get(Config.SERVICEACCOUNT_TOKEN_PATH)), Charsets.UTF_8);
+            return new String(Files.readAllBytes(Paths.get(Config.SERVICEACCOUNT_TOKEN_PATH)), StandardCharsets.UTF_8);
         }
         throw new FileNotFoundException(String.format("Unable to get token from %s", Config.SERVICEACCOUNT_TOKEN_PATH));
     }
@@ -109,7 +109,7 @@ public final class Clients {
     @Nonnull
     private static String getCAFromLocalCluster() throws IOException {
         if (Files.exists(Paths.get(Config.SERVICEACCOUNT_CA_PATH))) {
-            return new String(Files.readAllBytes(Paths.get(Config.SERVICEACCOUNT_CA_PATH)), Charsets.UTF_8);
+            return new String(Files.readAllBytes(Paths.get(Config.SERVICEACCOUNT_CA_PATH)), StandardCharsets.UTF_8);
         }
         throw new FileNotFoundException(String.format("Unable to get CA from %s", Config.SERVICEACCOUNT_CA_PATH));
     }

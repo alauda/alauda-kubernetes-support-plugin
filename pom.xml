@@ -5,14 +5,14 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>2.36</version>
+    <version>4.15</version>
     <relativePath></relativePath>
   </parent>
   <groupId>io.alauda.jenkins.plugins</groupId>
   <artifactId>alauda-kubernetes-support</artifactId>
   <version>${revision}${sha1}${changelist}</version>
   <packaging>hpi</packaging>
-  <name>Alauda Kubernetes Suport Plugin</name>
+  <name>Alauda Kubernetes Support Plugin</name>
   <description>This plugin allows users to config kubernetes and share configuration to other plugins.</description>
   <url>https://wiki.jenkins.io/display/JENKINS/Alauda+Kubernetes+Support+Plugin</url>
   <organization>
@@ -50,17 +50,17 @@
     </snapshotRepository>
   </distributionManagement>
   <properties>
-    <revision>2.13</revision>
+    <revision>3.4</revision>
     <changelist>-SNAPSHOT</changelist>
     <java.level>8</java.level>
-    <jenkins.version>2.83</jenkins.version>
+    <jenkins.version>2.249.3</jenkins.version>
     <sha1></sha1>
   </properties>
   <dependencies>
     <dependency>
       <groupId>io.kubernetes</groupId>
       <artifactId>client-java</artifactId>
-      <version>6.0.3</version>
+      <version>11.0.0</version>
       <exclusions>
         <exclusion>
           <artifactId>bcprov-jdk15on</artifactId>
@@ -83,7 +83,7 @@
     <dependency>
       <groupId>io.kubernetes</groupId>
       <artifactId>client-java-extended</artifactId>
-      <version>6.0.3</version>
+      <version>11.0.0</version>
       <exclusions>
         <exclusion>
           <artifactId>bcprov-jdk15on</artifactId>
@@ -131,12 +131,32 @@
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
-      <version>3.12.0</version>
+      <version>3.14.9</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>plain-credentials</artifactId>
       <version>1.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.30</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.15</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.20</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.8.0</version>
     </dependency>
   </dependencies>
   <repositories>
