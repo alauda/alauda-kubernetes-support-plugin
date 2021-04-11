@@ -7,6 +7,7 @@ import io.alauda.jenkins.devops.support.utils.SyncPluginConfigurationCompatiblil
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.Configuration;
 import jenkins.model.GlobalConfiguration;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -88,8 +89,6 @@ public class KubernetesClusterConfiguration extends GlobalConfiguration {
     public void triggerEvents(KubernetesCluster cluster) {
         try {
             ApiClient client = Clients.createClientFromCluster(cluster);
-            OkHttpClient httpClient = client.getHttpClient().newBuilder().readTimeout(0, TimeUnit.SECONDS).build();
-            client.setHttpClient(httpClient);
             // If we have more clusters to config in the future, we may need to remove this.
             Configuration.setDefaultApiClient(client);
 
