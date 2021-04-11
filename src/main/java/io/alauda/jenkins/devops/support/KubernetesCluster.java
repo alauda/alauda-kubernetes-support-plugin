@@ -22,12 +22,17 @@ import org.kohsuke.stapler.QueryParameter;
 import java.util.Objects;
 
 public class KubernetesCluster extends AbstractDescribableImpl<KubernetesCluster> {
+
+    public static final int DEFAULT_READ_TIMEOUT_SECONDS = 15;
+
+
     private String masterUrl;
     private String credentialsId;
     private boolean skipTlsVerify = false;
     private String serverCertificateAuthority;
     private boolean defaultCluster = false;
     private boolean managerCluster = false;
+    private int readTimeout = DEFAULT_READ_TIMEOUT_SECONDS;
 
     @DataBoundConstructor
     public KubernetesCluster() {
@@ -87,6 +92,15 @@ public class KubernetesCluster extends AbstractDescribableImpl<KubernetesCluster
         this.managerCluster = managerCluster;
     }
 
+    public int getReadTimeout() {
+        return readTimeout;
+    }
+
+    @DataBoundSetter
+    public void setReadTimeout(int readTimeout) {
+        this.readTimeout = readTimeout;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -97,16 +111,22 @@ public class KubernetesCluster extends AbstractDescribableImpl<KubernetesCluster
                 managerCluster == cluster.managerCluster &&
                 Objects.equals(masterUrl, cluster.masterUrl) &&
                 Objects.equals(credentialsId, cluster.credentialsId) &&
+                readTimeout ==  cluster.readTimeout &&
                 Objects.equals(serverCertificateAuthority, cluster.serverCertificateAuthority);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(masterUrl, credentialsId, skipTlsVerify, serverCertificateAuthority, defaultCluster, managerCluster);
+        return Objects.hash(masterUrl, credentialsId, skipTlsVerify, serverCertificateAuthority, defaultCluster, managerCluster, readTimeout);
     }
 
     @Extension
     public static class AlaudaDevOpsK8sServerDescriptor extends Descriptor<KubernetesCluster> {
+
+        @SuppressWarnings("unused") // used by jelly
+        public int getDefaultReadTimeout() {
+            return DEFAULT_READ_TIMEOUT_SECONDS;
+        }
 
         public ListBoxModel doFillCredentialsIdItems(@QueryParameter String credentialsId) {
             if (credentialsId == null) {

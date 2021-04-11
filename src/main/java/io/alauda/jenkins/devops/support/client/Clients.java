@@ -5,6 +5,7 @@ import io.alauda.jenkins.devops.support.exception.KubernetesClientException;
 import io.alauda.jenkins.devops.support.utils.CredentialsUtils;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.util.Config;
+import okhttp3.Interceptor;
 import okio.Buffer;
 import org.apache.commons.lang.StringUtils;
 
@@ -16,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,7 +41,7 @@ public final class Clients {
         if (StringUtils.isEmpty(cluster.getMasterUrl())) {
             try {
                 client = Config.fromCluster();
-                return client;
+                return setTimeoutHttpClient(cluster, client);
             } catch (IOException e) {
                 logger.log(Level.SEVERE, String.format("Unable to create a client from local cluster, reason %s", e.getMessage()), e);
                 throw new KubernetesClientException(e);
@@ -78,7 +80,8 @@ public final class Clients {
                 logger.log(Level.WARNING, String.format("Unable to get ca for k8s client, reason %s", e.getMessage()), e);
             }
         }
-        return client;
+
+        return setTimeoutHttpClient(cluster, client);
     }
 
     public static ApiClient createClientFromConfig(String masterUrl, String credentialsId, String serverCertificateAuthority, boolean skipTlsVerify) throws KubernetesClientException {
@@ -89,6 +92,21 @@ public final class Clients {
         cluster.setSkipTlsVerify(skipTlsVerify);
 
         return createClientFromCluster(cluster);
+    }
+
+    @Nonnull
+    public static ApiClient setTimeoutHttpClient(@Nonnull KubernetesCluster cluster, @Nonnull ApiClient client) {
+        okhttp3.OkHttpClient timeoutHttpClient = client.getHttpClient().newBuilder().readTimeout(0, TimeUnit.SECONDS)
+                .addInterceptor(chain -> {
+                    String isWatch = chain.request().url().queryParameter("watch");
+                    if (!Boolean.parseBoolean(isWatch)) {
+                        return chain.proceed(chain.request());
+                    }
+
+                    Interceptor.Chain chainTimeout = chain.withReadTimeout(cluster.getReadTimeout(), TimeUnit.SECONDS);
+                    return chainTimeout.proceed(chain.request());
+                }).build();
+        return client.setHttpClient(timeoutHttpClient);
     }
 
 
